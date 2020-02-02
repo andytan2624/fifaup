@@ -16,3 +16,17 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('tangy', function() {
+    return 'JTANGY';
+});
+
+
+// Match
+Route::post('match', 'MatchController@store');
+
+// Score
+Route::post('score', 'ScoreController@index');
+
+// League
+Route::get('score/{league_id}', 'LeagueController@latestMatches');
