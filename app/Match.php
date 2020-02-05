@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 class Match extends Model
 {
     protected $primaryKey = 'match_id';
+    public $incrementing = false;
 
     /**
      * The attributes that are mass assignable.

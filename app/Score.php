@@ -15,6 +15,7 @@ class Score extends Model
     public const STATUS_DRAW = 'draw';
 
     protected $primaryKey = 'score_id';
+    public $incrementing = false;
 
     /**
      * The attributes that are mass assignable.

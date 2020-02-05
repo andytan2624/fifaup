@@ -27,6 +27,7 @@ class CreateScoreRecordAction implements ActionInterface {
 
     public function execute(): void
     {
+
         // TODO: we need some validation on the data here
 
         // Iterate over every user in the users array
@@ -40,7 +41,7 @@ class CreateScoreRecordAction implements ActionInterface {
             // Create a new match record
             $score = new Score();
             $score->fill([
-                'match_id' => $this->match->match_id,
+                'match_id' => $this->match->getKey(),
                 'user_id' => $user,
                 'points' => $this->data['score'],
                 'status' => $this->data['status'],
