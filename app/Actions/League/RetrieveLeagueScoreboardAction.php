@@ -25,10 +25,12 @@ class RetrieveLeagueScoreboardAction implements ActionInterface
 
     public function execute(): array
     {
-        $matches = $this->league->matches;
 
-
-        $newScores = $this->league->scores()->whereDate('scores.created_at', '>=', Carbon::now()->subMonth(1)->toDateTimeString())->get();
+        $newScores = $this->league->scores()->whereDate(
+            'scores.created_at',
+            '>=',
+            Carbon::now()->subMonth(1)->toDateTimeString()
+        )->get();
 
         $scoreTally = [];
         foreach ($newScores as $score) {
@@ -39,10 +41,10 @@ class RetrieveLeagueScoreboardAction implements ActionInterface
             switch ($score->status) {
                 case Score::STATUS_WIN:
                     $scoreTally[$score->user_id] += !$score->is_team ? 3 : 2;
-                break;
+                    break;
                 case Score::STATUS_DRAW:
                     $scoreTally[$score->user_id] += 1;
-                break;
+                    break;
             }
         }
 

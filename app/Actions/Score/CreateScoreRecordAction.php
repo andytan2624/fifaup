@@ -6,8 +6,8 @@ use App\Match;
 use App\Score;
 use App\User;
 
-class CreateScoreRecordAction implements ActionInterface {
-
+class CreateScoreRecordAction implements ActionInterface
+{
     private $match;
     private $data;
     private $team;
@@ -33,7 +33,7 @@ class CreateScoreRecordAction implements ActionInterface {
         // Iterate over every user in the users array
         foreach ($this->data['users'] as $user) {
             // Check if $user is an email cause then we need to get an ID
-            if(filter_var($user, FILTER_VALIDATE_EMAIL)) {
+            if (filter_var($user, FILTER_VALIDATE_EMAIL)) {
                 // valid address
                 $user = User::where('email', $user)->first()->user_id;
             }
@@ -50,6 +50,5 @@ class CreateScoreRecordAction implements ActionInterface {
             ]);
             $score->save();
         }
-
     }
 }

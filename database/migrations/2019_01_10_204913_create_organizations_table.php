@@ -22,6 +22,8 @@ class CreateOrganizationsTable extends Migration
         Schema::create(static::TABLE_NAME, function (Blueprint $table) {
             $table->uuid('organization_id')->primary();
             $table->string('name', 255)->nullable();
+            $table->string('slack_team_id')->nullable();
+            $table->string('slack_token')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

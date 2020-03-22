@@ -27,6 +27,8 @@ class CreateMatchesTable extends Migration
             $table->integer('team_1_penalties')->nullable()->default(0);
             $table->integer('team_2_penalties')->nullable()->default(0);
             $table->string('name')->nullable();
+            $table->float('higher_score')->nullable()->default(0);
+            $table->float('lower_score')->nullable()->default(0);
             $table->timestamps();
             $table->softDeletes();
             $table->foreign('league_id', 'league_fk')->references('league_id')->on('leagues')->onDelete('CASCADE

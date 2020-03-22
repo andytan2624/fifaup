@@ -21,26 +21,18 @@ class CreateMatchRecordAction implements ActionInterface
 
     public function execute(): Match
     {
-        // TODO: we need some validation on the data here
-
-        $team1Data = $this->data['team_1'];
-        $team2Data = $this->data['team_2'];
+        $firstScore = $this->data['team_1']['score'];
+        $secondScore = $this->data['team_2']['score'];
 
         // Create a new match record
         $match = new Match();
         $match->fill([
             'league_id' => $this->data['league_id'],
-            'team_1_score' => $team1Data['score'],
-            'team_2_score' => $team2Data['score'],
+            'higher_score' => $firstScore >= $secondScore ? $firstScore : $secondScore,
+            'lower_score' => $firstScore < $secondScore ? $firstScore : $secondScore,
         ]);
         $match->save();
-
-        $poo = 1;
 
         return $match;
     }
 }
-
-
-
-

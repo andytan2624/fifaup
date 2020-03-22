@@ -31,50 +31,52 @@ class RetrieveLeagueRecentMatchesAction implements ActionInterface
 
         /** @var Match $match */
         foreach ($matches as $match) {
+            $resultMatch = [
+                'winner' => null,
+                'loser' => null,
+                'draw' => null,
+                'date' => Carbon::createFromFormat('Y-m-d H:i:s', $match->created_at)->diffForHumans(),
+            ];
 
-            $winningTeam = [
+            $team1 = [
                 'score' => 0,
                 'users' => [],
             ];
-            $losingTeam = [
+            $team2 = [
                 'score' => 0,
                 'users' => [],
             ];
 
-            // We want to order the response so the winning team is listed first with details
-            if ($match->team_1_score >= $match->team_2_score) {
-                $winningTeam['score'] = $match->team_1_score;
+            /** @var Score $team1Score */
+            $team1Scores = $match->team1Scores();
+            /** @var Score $team2Score */
+            $team2Scores = $match->team2Scores();
 
-                /** @var Score $score */
-                foreach ($match->team1Scores as $score) {
-
-                    $winningTeam['users'][] = $score->user->name;
-                }
-
-                $losingTeam['score'] = $match->team_2_score;
-                /** @var Score $score */
-                foreach ($match->team2Scores as $score) {
-                    $losingTeam['users'][] = $score->user->name;
-                }
-
-            } else {
-                $winningTeam['score'] = $match->team_2_score;
-                /** @var Score $score */
-                foreach ($match->team2Scores as $score) {
-                    $winningTeam['users'][] = $score->user->name;
-                }
-
-                $losingTeam['score'] = $match->team_1_score;
-                /** @var Score $score */
-                foreach ($match->team1Scores as $score) {
-                    $losingTeam['users'][] = $score->user->name;
-                }
+            /** @var Score $score */
+            foreach ($team1Scores->get() as $score) {
+                $team1['score'] = $score->points;
+                $team1['users'][] = $score->user->name;
             }
 
-            $transformedArray[] = [
-                'winningTeam' => $winningTeam,
-                'losingTeam' => $losingTeam,
-            ];
+            /** @var Score $score */
+            foreach ($team2Scores->get() as $score) {
+                $team2['score'] = $score->points;
+                $team2['users'][] = $score->user->name;
+            }
+
+            if ($team1['score'] > $team2['score']) {
+                $resultMatch['winner'] = $team1;
+                $resultMatch['loser'] = $team2;
+            } elseif ($team2['score'] > $team1['score']) {
+                $resultMatch['winner'] = $team2;
+                $resultMatch['loser'] = $team1;
+            } else {
+                $resultMatch['draw'] = [];
+                $resultMatch['draw'][] = $team1;
+                $resultMatch['draw'][] = $team2;
+            }
+
+            $transformedArray[] = $resultMatch;
         }
 
         return $transformedArray;

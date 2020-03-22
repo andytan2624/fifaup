@@ -24,6 +24,7 @@ class CreateLeaguesTable extends Migration
             $table->string('name', 255)->nullable();
             $table->uuid('organization_id')->nullable();
             $table->uuid('sport_id')->nullable();
+            $table->string('slack_channel_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

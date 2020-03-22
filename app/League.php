@@ -7,19 +7,20 @@ use Illuminate\Support\Str;
 
 class League extends Model
 {
-    protected  $primaryKey = 'league_id';
+    protected $primaryKey = 'league_id';
+    public $incrementing = false;
 
     public static function boot()
     {
         parent::boot();
-        self::creating(function($model){
+        self::creating(function ($model) {
             $model->league_id = Str::uuid();
         });
     }
 
     public function matches()
     {
-        return $this->hasMany('App\Match', 'league_id');
+        return $this->hasMany('App\Match', 'league_id')->orderByDesc('created_at');
     }
 
     public function scores()
