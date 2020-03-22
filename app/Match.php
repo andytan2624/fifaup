@@ -16,13 +16,13 @@ class Match extends Model
      * @var array
      */
     protected $fillable = [
-        'league_id', 'team_1_score', 'team_2_score', 'team_1_penalties', 'team_2_penalties', 'name'
+        'league_id', 'higher_score', 'lower_score', 'name'
     ];
 
     public static function boot()
     {
         parent::boot();
-        self::creating(function($model){
+        self::creating(function ($model) {
             $model->match_id = Str::uuid();
         });
     }
@@ -34,7 +34,7 @@ class Match extends Model
 
     public function scores()
     {
-        return $this->hasMany('App\Score', 'match_id');
+        return $this->hasMany('App\Score', 'match_id')->orderByDesc('points');
     }
 
     public function team1Scores()
@@ -45,5 +45,28 @@ class Match extends Model
     public function team2Scores()
     {
         return $this->scores()->where('team', '=', 2);
+    }
+
+    public function winningTeam()
+    {
+        return $this->scores()->where('status', '=', Score::STATUS_WIN);
+    }
+
+    public function losingTeam()
+    {
+        return $this->scores()->where('status', '=', Score::STATUS_LOSS);
+    }
+
+    public function drawTeam()
+    {
+        return $this->scores()->where('status', '=', Score::STATUS_DRAW);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDraw(): bool
+    {
+        return $this->higher_score === $this->lower_score;
     }
 }

@@ -80,20 +80,23 @@
             @endif
 
             <div class="content">
-                <div class="title m-b-md">
-                    Laravel
+                <div class="col-6">
+                    <div class="m-b-md">
+                        Integrate Table Tennis
+                    </div>
+                    <a href="https://slack.com/oauth/v2/authorize?client_id=959261738390.980846041076&scope=channels:history,commands,im:history,incoming-webhook,users:read,users:read.email&user_scope=admin,users:read,users:read.email&state=TT">
+                        <img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x">
+                    </a>
+                </div>
+                <div class="col-6">
+                    <div class="m-b-md">
+                        Integrate FIFA
+                    </div>
+                    <a href="https://slack.com/oauth/v2/authorize?client_id=959261738390.980846041076&scope=channels:history,commands,im:history,incoming-webhook,users:read,users:read.email&user_scope=admin,users:read,users:read.email&state=FIFA">
+                        <img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x">
+                    </a>
                 </div>
 
-                <div class="links">
-                    <a href="https://laravel.com/docs">Docs</a>
-                    <a href="https://laracasts.com">Laracasts</a>
-                    <a href="https://laravel-news.com">News</a>
-                    <a href="https://blog.laravel.com">Blog</a>
-                    <a href="https://nova.laravel.com">Nova</a>
-                    <a href="https://forge.laravel.com">Forge</a>
-                    <a href="https://vapor.laravel.com">Vapor</a>
-                    <a href="https://github.com/laravel/laravel">GitHub</a>
-                </div>
             </div>
         </div>
     </body>

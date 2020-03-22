@@ -17,7 +17,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('tangy', function() {
+Route::get('tangy', function () {
     return 'JTANGY';
 });
 
@@ -30,3 +30,7 @@ Route::post('score', 'ScoreController@index');
 
 // League
 Route::get('score/{league_id}', 'LeagueController@latestMatches');
+
+Route::post('/webhook', 'IncomingController@index');
+
+Route::get('/authenticate', 'IncomingController@authenticateSlack');

@@ -22,6 +22,7 @@ class CreateSportsTable extends Migration
         Schema::create(static::TABLE_NAME, function (Blueprint $table) {
             $table->uuid('sport_id')->primary();
             $table->string('name', 255)->nullable();
+            $table->string('code', 10)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
