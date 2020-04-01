@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 class League extends Model
 {
     protected $primaryKey = 'league_id';
+    protected $table = 'leagues';
     public $incrementing = false;
 
     public static function boot()
@@ -33,5 +34,10 @@ class League extends Model
             'league_id',
             'match_id'
         );
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany('App\User', 'league_users', 'league_id', 'user_id')->withTimestamps();
     }
 }

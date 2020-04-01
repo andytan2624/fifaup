@@ -60,12 +60,12 @@ class TransformSlackMatchRequest implements ActionInterface
 
             if (count($user) == 2) {
                 $userSlackId = $user[1];
-                $userId = (new RetrieveUserIdFromSlackId($userSlackId, $this->organization))->execute();
+                $userId = (new RetrieveUserIdFromSlackId($userSlackId, $this->organization, $this->league))->execute();
                 $teamData[$switch]['users'][] = $userId;
             }
 
             if (count($user) < 2 && is_int((int) $data)) {
-                $teamData[$switch]['score'] = $data;
+                $teamData[$switch]['score'] = (int) $data;
                 if (1 === $switch) {
                     $switch = 2;
                 }
@@ -76,9 +76,10 @@ class TransformSlackMatchRequest implements ActionInterface
             $teamData[1]['status'] = Score::STATUS_WIN;
             $teamData[2]['status'] = Score::STATUS_LOSS;
         } elseif ($teamData[2]['score'] > $teamData[1]['score']) {
-            $teamData[2]['status'] = Score::STATUS_LOSS;
-            $teamData[1]['status'] = Score::STATUS_WIN;
+            $teamData[2]['status'] = Score::STATUS_WIN;
+            $teamData[1]['status'] = Score::STATUS_LOSS;
         }
+
         return $teamData;
     }
 }

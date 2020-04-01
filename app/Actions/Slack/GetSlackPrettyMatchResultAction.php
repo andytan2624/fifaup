@@ -59,12 +59,15 @@ class GetSlackPrettyMatchResultAction implements ActionInterface
             ],
         ];
 
+        $higherScore = $this->match->higher_score > -1 ? $this->match->higher_score : "({$this->match->higher_score})";
+        $lowerScore = $this->match->lower_score > -1 ? $this->match->lower_score : "({$this->match->lower_score})";
+
         // Scoreline of output
         $output[] =  [
             "type" => "section",
             "text" => [
                 "type" => "mrkdwn",
-                "text" => "*Score: ". $this->match->higher_score ." - ". $this->match->lower_score ."*"
+                "text" => "*Score: ". $higherScore ." - ". $lowerScore ."*"
             ]
         ];
 

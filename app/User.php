@@ -12,6 +12,7 @@ class User extends Authenticatable
     use Notifiable;
 
     protected $primaryKey = 'user_id';
+    protected $table = 'users';
     public $incrementing = false;
 
     /**
@@ -52,5 +53,15 @@ class User extends Authenticatable
     public function __toString()
     {
         return $this->name;
+    }
+
+    public function leagues()
+    {
+        return $this->belongsToMany('App\League', 'league_users', 'user_id', 'league_id')->withTimestamps();
+    }
+
+    public function organizations()
+    {
+        return $this->belongsToMany('App\Organization', 'organization_users', 'user_id', 'organization_id')->withTimestamps();
     }
 }

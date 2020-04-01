@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Actions\League\ProcessMatchResultForLeagueAction;
 use App\Actions\League\RetrieveLeagueRecentMatchesAction;
 use App\Actions\League\RetrieveLeagueScoreboardAction;
+use App\Actions\Match\ValidateTransformedMatchDataAction;
+use App\Actions\Slack\GetSlackPrettyHelpAction;
 use App\Actions\Slack\GetSlackPrettyLadderAction;
 use App\Actions\Slack\GetSlackPrettyMatchResultAction;
 use App\Actions\Slack\GetSlackPrettyRecentResultsAction;
+use App\Actions\Slack\PrintPrettySlackErrorMessageAction;
 use App\Actions\Slack\TransformSlackMatchRequest;
 use App\League;
-use App\Match;
 use App\Organization;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -18,6 +20,11 @@ use Illuminate\Http\Request;
 
 class IncomingController extends Controller
 {
+    public const HOOK_NEW = 'new';
+    public const HOOK_LADDER = 'ladder';
+    public const HOOK_RECENT = 'recent';
+    public const HOOK_HELP = 'help';
+
     public function test(Request $request)
     {
         return view('test');
@@ -42,53 +49,86 @@ class IncomingController extends Controller
 
         $command = array_shift($textArray);
 
-        if ($command === "new") {
-            $teamData = (new TransformSlackMatchRequest($organization, $league, $textArray))->execute();
+        $response = $this->getHelpBlurb($league);
 
-            // Now we call the logic to record match data
-            $matchProcessedData = [
-                'league_id' => $league->league_id,
-                'team_1' => $teamData[1],
-                'team_2' => $teamData[2],
-            ];
-
-            $match = (new ProcessMatchResultForLeagueAction($matchProcessedData))->execute();
-
-            $output = (new GetSlackPrettyMatchResultAction($match))->execute();
-
-            return response()->json([
-                "response_type" => "in_channel",
-                "blocks" => $output,
-            ]);
-        }
-
-        if ($command === "ladder") {
-            $retrieveLeagueScoreboardAction = new RetrieveLeagueScoreboardAction($league->league_id);
-            $scores = $retrieveLeagueScoreboardAction->execute();
-
-            $output = (new GetSlackPrettyLadderAction($scores))->execute();
-
-            return response()->json([
-                "response_type" => "in_channel",
-                "blocks" => $output,
-            ]);
-        }
-
-        if ($command === "recent") {
-            $retrieveLeagueRecentMatchesAction = new RetrieveLeagueRecentMatchesAction($league->league_id);
-            $matches = $retrieveLeagueRecentMatchesAction->execute();
-            $output = (new GetSlackPrettyRecentResultsAction($matches))->execute();
-
-            return response()->json([
-                "response_type" => "in_channel",
-                "blocks" => $output,
-            ]);
+        if ($command === self::HOOK_NEW) {
+            $response = $this->createNewMatch($organization, $league, $textArray);
+        } else if ($command === self::HOOK_LADDER) {
+            $response = $this->getLadder($league);
+        } else if ($command === self::HOOK_RECENT) {
+            $response = $this->getRecentMatches($league);
         }
 
         return response()->json([
             "response_type" => "in_channel",
-            "blocks" => 'Command does not exist. Use help command to see what commands are available'
+            "blocks" => $response
         ]);
+    }
+
+
+    /**
+     * @param Organization $organization
+     * @param League $league
+     * @param array $textArray
+     * @return array
+     */
+    public function createNewMatch(Organization $organization, League $league, array $textArray) :array
+    {
+        $teamData = (new TransformSlackMatchRequest($organization, $league, $textArray))->execute();
+
+        // Validate data
+        $errorMessage = (new ValidateTransformedMatchDataAction($teamData))->execute();
+
+        if (null !== $errorMessage) {
+            return (new PrintPrettySlackErrorMessageAction($errorMessage))->execute();
+        }
+
+        // Now we call the logic to record match data
+        $matchProcessedData = [
+            'league_id' => $league->league_id,
+            'team_1' => $teamData[1],
+            'team_2' => $teamData[2],
+        ];
+
+        $match = (new ProcessMatchResultForLeagueAction($matchProcessedData))->execute();
+
+        return (new GetSlackPrettyMatchResultAction($match))->execute();
+    }
+
+    /**
+     * @param League $league
+     * @return array
+     */
+    public function getLadder(League $league) :array
+    {
+        $retrieveLeagueScoreboardAction = new RetrieveLeagueScoreboardAction($league->league_id);
+        $scores = $retrieveLeagueScoreboardAction->execute();
+
+        return (new GetSlackPrettyLadderAction($scores))->execute();
+    }
+
+    /**
+     * @param League $league
+     * @return array
+     */
+    public function getRecentMatches(League $league) :array
+    {
+        $retrieveLeagueRecentMatchesAction = new RetrieveLeagueRecentMatchesAction($league->league_id);
+        $matches = $retrieveLeagueRecentMatchesAction->execute();
+        return (new GetSlackPrettyRecentResultsAction($matches))->execute();
+    }
+
+    /**
+     * @param League $league
+     * @return array
+     */
+    public function getHelpBlurb(League $league) :array
+    {
+        return (new GetSlackPrettyHelpAction($league))->execute();
+    }
+
+    public function errorMessage(string $errorMessage) :array {
+
     }
 
     /**
@@ -129,6 +169,8 @@ class IncomingController extends Controller
                 $league = League::where('name', 'Cover Genius Table Tennis League')->first();
             } elseif ($input['state'] == "FIFA") {
                 $league = League::where('name', 'FIFA League')->first();
+            } elseif ($input['state'] == "SCRIB") {
+                $league = League::where('name', 'Cover Genius Scribbl League')->first();
             }
 
             if (null !== $league && null !== $data['incoming_webhook']['channel_id']) {
@@ -138,7 +180,6 @@ class IncomingController extends Controller
         } catch (GuzzleException $e) {
             echo $e->getResponse()->getBody()->getContents();
         }
-
-        var_dump('You have reached the end');
     }
+
 }

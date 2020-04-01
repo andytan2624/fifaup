@@ -13,16 +13,19 @@ class RetrieveUserIdFromSlackId implements ActionInterface
 
     public $slackUserId;
     public $organization;
+    public $league;
 
     /**
      * RetrieveUserIdFromSlackId constructor.
      * @param string $slackUserId
      * @param Organization $organization
+     * @param League $league
      */
-    public function __construct(string $slackUserId, Organization $organization)
+    public function __construct(string $slackUserId, Organization $organization, League $league)
     {
         $this->slackUserId = $slackUserId;
         $this->organization = $organization;
+        $this->league = $league;
     }
 
     public function execute(): string
@@ -31,6 +34,10 @@ class RetrieveUserIdFromSlackId implements ActionInterface
         if (!$user) {
             // Retrieve from slack API then
             $user = (new CreateUserFromSlackId($this->slackUserId, $this->organization))->execute();
+
+            // Now let's add this user to the organization and league as well
+            $user->leagues()->sync($this->league);
+            $user->organizations()->sync($this->organization);
         }
 
         return $user->user_id;
