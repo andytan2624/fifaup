@@ -26,7 +26,8 @@ class GetSlackPrettyHelpAction implements ActionInterface
 
         $helpBlurb .= "- Record a match between two teams e.g. _/officecup new @playerOne 12 @playerTwo 3_ ";
         $helpBlurb .= "OR _/officecup new @playerOne @playerTwo 4 @playerThree @playerFour 3_ \n\n";
-        $helpBlurb .= "- Get the latest rankings of players based on the last month of results e.g. _/officecup ladder_ \n\n";
+        $helpBlurb .= "- Get the latest rankings of players based on the last month of results " .
+            "e.g. _/officecup ladder_ \n\n";
         $helpBlurb .= "-See the last twenty matches that have been played in the league e.g. _/officecup recent_";
 
         // Title of output

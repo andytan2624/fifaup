@@ -53,9 +53,9 @@ class IncomingController extends Controller
 
         if ($command === self::HOOK_NEW) {
             $response = $this->createNewMatch($organization, $league, $textArray);
-        } else if ($command === self::HOOK_LADDER) {
+        } elseif ($command === self::HOOK_LADDER) {
             $response = $this->getLadder($league);
-        } else if ($command === self::HOOK_RECENT) {
+        } elseif ($command === self::HOOK_RECENT) {
             $response = $this->getRecentMatches($league);
         }
 
@@ -127,10 +127,6 @@ class IncomingController extends Controller
         return (new GetSlackPrettyHelpAction($league))->execute();
     }
 
-    public function errorMessage(string $errorMessage) :array {
-
-    }
-
     /**
      * authenticateSlack
      */
@@ -181,5 +177,4 @@ class IncomingController extends Controller
             echo $e->getResponse()->getBody()->getContents();
         }
     }
-
 }
