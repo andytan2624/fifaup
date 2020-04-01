@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Organization extends Model
 {
@@ -18,6 +19,14 @@ class Organization extends Model
     protected $fillable = [
         'name', 'slack_team_id', 'slack_token'
     ];
+
+    public static function boot()
+    {
+        parent::boot();
+        self::creating(function ($model) {
+            $model->organization_id = Str::uuid();
+        });
+    }
 
     public function users()
     {
