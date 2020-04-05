@@ -108,7 +108,8 @@ class TransformSlackMatchRequest implements ActionInterface
 
             if (count($user) == 2) {
                 $userSlackId = $user[1];
-                $teamData['users'][] = (new RetrieveUserIdFromSlackId($userSlackId, $this->organization, $this->league))->execute();
+                $teamData['users'][] = (new RetrieveUserIdFromSlackId($userSlackId, $this->organization, $this->league))
+                    ->execute();
             }
         }
 

@@ -31,7 +31,7 @@ class ValidateTransformedMatchDataAction implements ActionInterface
      */
     public function execute(): ?string
     {
-        if ($this->league->sport->scoreType->code === ScoreType::RUMBLE) {
+        if ($this->league->getScoreTypeCode() === ScoreType::RUMBLE) {
             return $this->executeRumbleValidation();
         }
 
@@ -61,8 +61,8 @@ class ValidateTransformedMatchDataAction implements ActionInterface
     {
         $errorMessage = null;
 
-        if (count($this->data) !== count(array_unique($this->data))) {
-            $errorMessage = "Every name should be unique";
+        if (count($this->data['users']) !== count(array_unique($this->data['users']))) {
+            $errorMessage = "There cannot be duplicate users in the list";
         }
 
         return $errorMessage;
