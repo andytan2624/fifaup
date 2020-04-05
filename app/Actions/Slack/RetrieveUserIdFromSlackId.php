@@ -35,7 +35,7 @@ class RetrieveUserIdFromSlackId implements ActionInterface
             // Retrieve from slack API then
             $user = (new CreateUserFromSlackId($this->slackUserId, $this->organization))->execute();
 
-            // Now let's add this user to the organization and league as well
+            // Now let's sync this user to the organization and league as well
             $user->leagues()->sync($this->league);
             $user->organizations()->sync($this->organization);
         }

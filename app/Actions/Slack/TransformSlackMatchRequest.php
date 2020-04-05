@@ -7,6 +7,7 @@ use App\Actions\ActionInterface;
 use App\League;
 use App\Organization;
 use App\Score;
+use App\ScoreType;
 use Carbon\Carbon;
 
 class TransformSlackMatchRequest implements ActionInterface
@@ -25,6 +26,11 @@ class TransformSlackMatchRequest implements ActionInterface
     public $data;
 
     /**
+     * @var string $scoreTypeCode
+     */
+    private $scoreTypeCode;
+
+    /**
      * TransformSlackMatchRequest constructor.
      * @param Organization $organization
      * @param League $league
@@ -35,10 +41,15 @@ class TransformSlackMatchRequest implements ActionInterface
         $this->organization = $organization;
         $this->league = $league;
         $this->data = $data;
+        $this->scoreTypeCode = $league->getScoreTypeCode();
     }
 
     public function execute(): array
     {
+        if ($this->scoreTypeCode === ScoreType::RUMBLE) {
+            return $this->executeRumbleTransformation();
+        }
+
         $teamData = [
             1 => [
                 'users' => [],
@@ -78,6 +89,27 @@ class TransformSlackMatchRequest implements ActionInterface
         } elseif ($teamData[2]['score'] > $teamData[1]['score']) {
             $teamData[2]['status'] = Score::STATUS_WIN;
             $teamData[1]['status'] = Score::STATUS_LOSS;
+        }
+
+        return $teamData;
+    }
+
+    /**
+     * @return array
+     */
+    public function executeRumbleTransformation() :array
+    {
+        $teamData = [
+            'users' => [],
+        ];
+
+        foreach ($this->data as $data) {
+            preg_match("/<@(\w+)|/", $data, $user);
+
+            if (count($user) == 2) {
+                $userSlackId = $user[1];
+                $teamData['users'][] = (new RetrieveUserIdFromSlackId($userSlackId, $this->organization, $this->league))->execute();
+            }
         }
 
         return $teamData;

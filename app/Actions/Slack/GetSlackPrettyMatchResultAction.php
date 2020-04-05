@@ -5,6 +5,7 @@ namespace App\Actions\Slack;
 use App\Actions\ActionInterface;
 use App\Match;
 use App\Score;
+use App\ScoreType;
 
 class GetSlackPrettyMatchResultAction implements ActionInterface
 {
@@ -22,6 +23,13 @@ class GetSlackPrettyMatchResultAction implements ActionInterface
 
     public function execute()
     {
+        /** @var League $league */
+        $league = $this->match->league;
+
+        if ($league->getScoreTypeCode() === ScoreType::RUMBLE) {
+            return $this->executeRumbleOutput();
+        }
+
         $scores = $this->match->scores;
 
         $winningTeam = null;
@@ -115,6 +123,55 @@ class GetSlackPrettyMatchResultAction implements ActionInterface
                 ]
             ];
         }
+
+        return $output;
+    }
+
+    /**
+     * @return array
+     */
+    public function executeRumbleOutput() :array
+    {
+        $output = [];
+
+        // Title of output
+        $output[] =  [
+            "type" => "section",
+            "text" => [
+                "type" => "mrkdwn",
+                "text" => "Match has been recorded successfully"
+            ],
+        ];
+
+        $userOutput = "";
+        /** @var Score $score */
+        foreach ($this->match->rankedScores as $index => $score) {
+            switch (($index + 1)) {
+                case 1:
+                    $positionText = ":first_place_medal: ";
+                    break;
+                case 2:
+                    $positionText = ":second_place_medal: ";
+                    break;
+                case 3:
+                    $positionText = ":third_place_medal: ";
+                    break;
+                default:
+                    $positionText = ($index + 1) . ". ";
+            }
+
+            $userOutput .= $positionText . $score->user['name'] . "\n";
+        }
+
+        // Scoreline of output
+        $output[] =  [
+            "type" => "section",
+            "text" => [
+                "type" => "mrkdwn",
+                "text" => $userOutput,
+            ]
+        ];
+
 
         return $output;
     }

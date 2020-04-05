@@ -23,13 +23,13 @@ class Score extends Model
      * @var array
      */
     protected $fillable = [
-        'match_id', 'user_id', 'points', 'status', 'team', 'is_team'
+        'match_id', 'user_id', 'points', 'status', 'team', 'is_team', 'rank_placement',
     ];
 
     public static function boot()
     {
         parent::boot();
-        self::creating(function($model){
+        self::creating(function ($model) {
             $model->score_id = Str::uuid();
         });
     }

@@ -29,12 +29,17 @@ class Match extends Model
 
     public function league()
     {
-        return $this->hasOne('App\League');
+        return $this->belongsTo('App\League', 'league_id');
     }
 
     public function scores()
     {
         return $this->hasMany('App\Score', 'match_id')->orderByDesc('points');
+    }
+
+    public function rankedScores()
+    {
+        return $this->hasMany('App\Score', 'match_id')->orderBy('rank_placement');
     }
 
     public function team1Scores()

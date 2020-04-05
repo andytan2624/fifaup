@@ -40,4 +40,15 @@ class League extends Model
     {
         return $this->belongsToMany('App\User', 'league_users', 'league_id', 'user_id')->withTimestamps();
     }
+
+    public function sport()
+    {
+        return $this->belongsTo('App\Sport', 'sport_id');
+    }
+
+
+    public function getScoreTypeCode()
+    {
+        return $this->sport->scoreType->code;
+    }
 }

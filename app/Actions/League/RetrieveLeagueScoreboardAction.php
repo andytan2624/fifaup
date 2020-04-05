@@ -6,6 +6,7 @@ use App\Actions\ActionInterface;
 use App\League;
 use App\Match;
 use App\Score;
+use App\ScoreType;
 use App\User;
 use Carbon\Carbon;
 
@@ -25,6 +26,9 @@ class RetrieveLeagueScoreboardAction implements ActionInterface
 
     public function execute(): array
     {
+        if ($this->league->getScoreTypeCode() === ScoreType::RUMBLE) {
+            return $this->executeRumbleScoreboard();
+        }
 
         $newScores = $this->league->scores()->whereDate(
             'scores.created_at',
@@ -46,6 +50,42 @@ class RetrieveLeagueScoreboardAction implements ActionInterface
                     $scoreTally[$score->user_id] += 1;
                     break;
             }
+        }
+
+        // Sort the array by points in descending order
+        arsort($scoreTally);
+
+        $transformedArray = [];
+
+        foreach ($scoreTally as $user_id => $points) {
+            $transformedArray[] = [
+                'user' => User::find($user_id)->name,
+                'points' => $points,
+            ];
+        }
+
+        return $transformedArray;
+    }
+
+    /**
+     * @return array
+     */
+    public function executeRumbleScoreboard() :array
+    {
+
+        $newScores = $this->league->scores()->whereDate(
+            'scores.created_at',
+            '>=',
+            Carbon::now()->subMonth(1)->toDateTimeString()
+        )->get();
+
+        $scoreTally = [];
+        foreach ($newScores as $score) {
+            if (!isset($scoreTally[$score->user_id])) {
+                $scoreTally[$score->user_id] = 0;
+            }
+
+            $scoreTally[$score->user_id] += $score->points;
         }
 
         // Sort the array by points in descending order

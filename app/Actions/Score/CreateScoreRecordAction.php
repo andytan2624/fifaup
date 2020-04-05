@@ -18,7 +18,7 @@ class CreateScoreRecordAction implements ActionInterface
      * @param array $data
      * @param string $team
      */
-    public function __construct(Match $match, array $data, string $team)
+    public function __construct(Match $match, array $data, string $team = null)
     {
         $this->match = $match;
         $this->data = $data;
@@ -31,7 +31,7 @@ class CreateScoreRecordAction implements ActionInterface
         // TODO: we need some validation on the data here
 
         // Iterate over every user in the users array
-        foreach ($this->data['users'] as $user) {
+        foreach ($this->data['users'] as $index => $user) {
             // Check if $user is an email cause then we need to get an ID
             if (filter_var($user, FILTER_VALIDATE_EMAIL)) {
                 // valid address
@@ -40,14 +40,23 @@ class CreateScoreRecordAction implements ActionInterface
 
             // Create a new match record
             $score = new Score();
-            $score->fill([
+
+            $scoreData = [
                 'match_id' => $this->match->getKey(),
                 'user_id' => $user,
-                'points' => $this->data['score'],
-                'status' => $this->data['status'],
-                'team' => $this->team,
-                'is_team' => count($this->data['users']) > 1 ? 1 : 0,
-            ]);
+            ];
+
+            if ($this->team != null) {
+                $scoreData['points'] = $this->data['score'];
+                $scoreData['status'] = $this->data['status'];
+                $scoreData['team'] = $this->team;
+                $scoreData['is_team'] = count($this->data['users']) > 1 ? 1 : 0;
+            } else {
+                $scoreData['points'] = count($this->data['users']) - $index;
+                $scoreData['rank_placement'] = ($index + 1);
+            }
+
+            $score->fill($scoreData);
             $score->save();
         }
     }
