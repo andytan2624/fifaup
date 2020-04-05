@@ -14,6 +14,7 @@ use App\Actions\Slack\PrintPrettySlackErrorMessageAction;
 use App\Actions\Slack\TransformSlackMatchRequest;
 use App\League;
 use App\Organization;
+use App\ScoreType;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
@@ -41,7 +42,6 @@ class IncomingController extends Controller
 
         $channel_id = $input['channel_id'];
         $league = League::where('slack_channel_id', $channel_id)->first();
-
         $team_id = $input['team_id'];
         $organization = Organization::where('slack_team_id', $team_id)->first();
 
@@ -77,19 +77,25 @@ class IncomingController extends Controller
         $teamData = (new TransformSlackMatchRequest($organization, $league, $textArray))->execute();
 
         // Validate data
-        $errorMessage = (new ValidateTransformedMatchDataAction($teamData))->execute();
+        $errorMessage = (new ValidateTransformedMatchDataAction($league, $teamData))->execute();
 
         if (null !== $errorMessage) {
             return (new PrintPrettySlackErrorMessageAction($errorMessage))->execute();
         }
 
-        // Now we call the logic to record match data
-        $matchProcessedData = [
-            'league_id' => $league->league_id,
-            'team_1' => $teamData[1],
-            'team_2' => $teamData[2],
-        ];
-
+        if ($league->getScoreTypeCode() === ScoreType::RUMBLE) {
+            $matchProcessedData = [
+                'league_id' => $league->league_id,
+                'users' => $teamData,
+            ];
+        } else {
+            // Now we call the logic to record match data
+            $matchProcessedData = [
+                'league_id' => $league->league_id,
+                'team_1' => $teamData[1],
+                'team_2' => $teamData[2],
+            ];
+        }
         $match = (new ProcessMatchResultForLeagueAction($matchProcessedData))->execute();
 
         return (new GetSlackPrettyMatchResultAction($match))->execute();
@@ -115,7 +121,7 @@ class IncomingController extends Controller
     {
         $retrieveLeagueRecentMatchesAction = new RetrieveLeagueRecentMatchesAction($league->league_id);
         $matches = $retrieveLeagueRecentMatchesAction->execute();
-        return (new GetSlackPrettyRecentResultsAction($matches))->execute();
+        return (new GetSlackPrettyRecentResultsAction($league, $matches))->execute();
     }
 
     /**

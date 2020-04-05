@@ -6,6 +6,7 @@ use App\Actions\ActionInterface;
 use App\League;
 use App\Match;
 use App\Score;
+use App\ScoreType;
 use App\User;
 use Carbon\Carbon;
 
@@ -25,6 +26,10 @@ class RetrieveLeagueRecentMatchesAction implements ActionInterface
 
     public function execute(): array
     {
+        if ($this->league->getScoreTypeCode() === ScoreType::RUMBLE) {
+            return $this->executeRumbleRetrieval();
+        }
+
         $matches = $this->league->matches()->limit(20)->get();
 
         $transformedArray = [];
@@ -76,6 +81,34 @@ class RetrieveLeagueRecentMatchesAction implements ActionInterface
                 $resultMatch['draw'][] = $team2;
             }
 
+            $transformedArray[] = $resultMatch;
+        }
+
+        return $transformedArray;
+    }
+
+    /**
+     * @return array
+     */
+    public function executeRumbleRetrieval() :array
+    {
+        $matches = $this->league->matches()->limit(5)->get();
+
+        $transformedArray = [];
+
+        /** @var Match $match */
+        foreach ($matches as $match) {
+            $resultMatch = [
+                'users' => "",
+                'date' => Carbon::createFromFormat('Y-m-d H:i:s', $match->created_at)->diffForHumans(),
+            ];
+
+            $users = [];
+            foreach ($match->rankedScores as $index => $score) {
+                $users[] = "*" . ($index + 1) . ".* " . $score->user['name'];
+            }
+
+            $resultMatch['users'] = implode("\n ", $users);
             $transformedArray[] = $resultMatch;
         }
 
